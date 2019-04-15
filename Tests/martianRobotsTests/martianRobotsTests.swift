@@ -45,7 +45,16 @@ final class martianRobotsTests: XCTestCase {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         let errorOutput = String(data: errorData, encoding: .utf8)
 
-        XCTAssertEqual(output, "Enter your instructions:\n")
+
+        let expectedOutput = """
+        Enter your instructions:
+        1 1 E
+        3 3 N LOST
+        2 3 S
+
+        """
+
+        XCTAssertEqual(output, expectedOutput)
         XCTAssertEqual(errorOutput, "")
     }
 

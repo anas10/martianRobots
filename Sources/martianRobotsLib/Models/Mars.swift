@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Mars {
+public struct Mars {
     var world: World
     var robots: [Robot]
 
@@ -17,8 +17,15 @@ struct Mars {
     }
 }
 
+extension Mars {
+    func isPositionOutsideWorld(position: Position) -> Bool {
+        return position.x < world.left || position.x > world.right ||
+            position.y < world.bottom || position.y > world.top
+    }
+}
+
 extension Mars: CustomDebugStringConvertible {
-    var debugDescription: String {
+    public var debugDescription: String {
         return """
         {
         world: \(world),
