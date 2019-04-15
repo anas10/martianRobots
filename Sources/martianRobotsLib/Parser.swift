@@ -8,12 +8,14 @@
 import Foundation
 
 public protocol ParserType {
+    var mars: Mars { get }
+
     func parseInput()
 }
 
 public class Parser: ParserType {
 
-    var mars: Mars = Mars()
+    public var mars: Mars = Mars()
 
     // This is required to make this class usuable and testable outside the module
     public init() {}
@@ -38,8 +40,6 @@ public class Parser: ParserType {
             printError("Invalid robots data")
             return
         }
-
-//        print(mars.debugDescription)
     }
 
 
@@ -59,6 +59,7 @@ public class Parser: ParserType {
                 .split(separator: " ")
 
             let instructionsData = data[index + 1]
+                .trimmingCharacters(in: .whitespacesAndNewlines)
 
             if validCoordinate(value: robotPosition[0]) &&
                 validCoordinate(value: robotPosition[1]) &&
@@ -70,7 +71,7 @@ public class Parser: ParserType {
                 let orientation = Orientation(rawValue: String(robotPosition[2]))!
                 let instructions = instructionsData.map { String($0) }
 
-                let robot = Robot(position: (x: x, y: y, orientation: orientation),
+                let robot = Robot(position: Position(x: x, y: y, orientation: orientation),
                                   instructions: instructions)
                 mars.robots.append(robot)
             } else {
@@ -95,8 +96,8 @@ public class Parser: ParserType {
             guard validCoordinate(value: coordinate) else { return false }
         }
 
-        mars.world.top = Int(upperRight[0])!
-        mars.world.right = Int(upperRight[1])!
+        mars.world.right = Int(upperRight[0])!
+        mars.world.top = Int(upperRight[1])!
 
         return true
     }
