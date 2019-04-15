@@ -20,6 +20,11 @@ public class Parser: ParserType {
     // This is required to make this class usuable and testable outside the module
     public init() {}
 
+    /**
+     Parses the input string while validating the data then stores it if successful
+
+     This function will print errors if any
+     */
     public func parseInput() {
         mars = Mars()
 
@@ -31,26 +36,37 @@ public class Parser: ParserType {
             return
         }
 
-        guard getUpperRightCoordinates(inputData) else {
-            printError("Invalid upper right coordinates")
-            return
+        getUpperRightCoordinates(inputData)
+            .onCompletion {
+                mars.world.right = $0.right
+                mars.world.top = $0.top
         }
 
-        guard getRobots(inputData) else {
-            printError("Invalid robots data")
-            return
-        }
+        getRobots(inputData)
+            .onCompletion { mars.robots = $0 }
     }
 
 
     // MARK: - Get methods
-    func getRobots(_ data: [String]) -> Bool {
+
+    /**
+     Parse robot data
+
+     This function will print errors if any
+
+     - parameters:
+        - data: an array of data to parse
+
+     - returns: An array of Robot elements on success or an error if the validation fails.
+     */
+    func getRobots(_ data: [String]) -> Result<[Robot]> {
         // Check that we have two lines per robot
         let count = data.count
         guard count >= 3, (count - 1) % 2 == 0 else {
-            printError("2 lines per robot required")
-            return false
+            return .failure(ParsingError.robotIncomplete)
         }
+
+        var robots: [Robot] = []
 
         var index = 1
         repeat {
@@ -73,35 +89,46 @@ public class Parser: ParserType {
 
                 let robot = Robot(position: Position(x: x, y: y, orientation: orientation),
                                   instructions: instructions)
-                mars.robots.append(robot)
+                robots.append(robot)
             } else {
-                return false
+                return .failure(ParsingError.robotInvalidData)
             }
 
             index += 2
 
         } while index < data.count
 
-        return true
+        return .success(robots)
     }
 
-    func getUpperRightCoordinates(_ data: [String]) -> Bool {
+    /**
+     Parse world coordinates
+
+     This function will print errors if any
+
+     - parameters:
+        - data: an array of data to parse
+
+     - returns: An tuple of coordinates on success or an error if the validation fails.
+     */
+    func getUpperRightCoordinates(_ data: [String]) -> Result<(right: Int, top: Int)> {
         let upperRight = data[0].split(separator: " ")
 
         // Check that we have only two elements
-        guard upperRight.count == 2 else { return false }
+        guard upperRight.count == 2 else { return .failure(ParsingError.areaIncomplete) }
 
         // Validate every coordinate
         for coordinate in upperRight {
-            guard validCoordinate(value: coordinate) else { return false }
+            guard validCoordinate(value: coordinate) else { return .failure(ParsingError.coordinateInvalid) }
         }
 
-        mars.world.right = Int(upperRight[0])!
-        mars.world.top = Int(upperRight[1])!
+        let right = Int(upperRight[0])!
+        let top = Int(upperRight[1])!
 
-        return true
+        return .success((right: right, top: top))
     }
 
+    //MARK: - Validation
     private func validOrientation(value: Substring) -> Bool {
         let charset = CharacterSet(charactersIn: "NSEW")
         return value.rangeOfCharacter(from: charset.inverted) == nil
@@ -109,7 +136,8 @@ public class Parser: ParserType {
 
     private func validInstructions(value: String) -> Bool {
         let charset = CharacterSet(charactersIn: "LRF")
-        return value.rangeOfCharacter(from: charset.inverted) == nil
+        return value.rangeOfCharacter(from: charset.inverted) == nil &&
+            value.count < 100
     }
 
     private func validCoordinate(value: Substring) -> Bool {
@@ -119,6 +147,7 @@ public class Parser: ParserType {
         return false
     }
 
+    //MARK: - Input
     private func getInputData() -> [String] {
         var inputData: [String] = []
 

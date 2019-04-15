@@ -17,30 +17,35 @@ class ParserTests: XCTestCase {
     }
 
     func testGetUpperRightCoordinates() {
-        XCTAssertTrue(parser.getUpperRightCoordinates(["5 3"]))
-        XCTAssertFalse(parser.getUpperRightCoordinates(["51 3"]))
-        XCTAssertFalse(parser.getUpperRightCoordinates(["5"]))
+        XCTAssertTrue(parser.getUpperRightCoordinates(["5 3"]).isSuccessful())
+        XCTAssertFalse(parser.getUpperRightCoordinates(["51 3"]).isSuccessful())
+        XCTAssertFalse(parser.getUpperRightCoordinates(["5"]).isSuccessful())
     }
 
     func testGetRobots() {
         let oneRobot = ["5 3", "1 1 E", "RFRFRFRF"]
-        XCTAssertTrue(parser.getRobots(oneRobot))
-        XCTAssertEqual(parser.mars.robots.count, 1)
+        let subject = parser.getRobots(oneRobot)
+
+        subject.onCompletion {
+            XCTAssertEqual($0.count, 1)
+        }
+
+        XCTAssertTrue(subject.isSuccessful())
 
         let noRobot = ["5 3"]
-        XCTAssertFalse(parser.getRobots(noRobot))
+        XCTAssertFalse(parser.getRobots(noRobot).isSuccessful())
 
         let emptyData: [String] = []
-        XCTAssertFalse(parser.getRobots(emptyData))
+        XCTAssertFalse(parser.getRobots(emptyData).isSuccessful())
 
         let maxCoordinateRobotData = ["5 3", "100 1 E", "RFRFRFRF"]
-        XCTAssertFalse(parser.getRobots(maxCoordinateRobotData))
+        XCTAssertFalse(parser.getRobots(maxCoordinateRobotData).isSuccessful())
 
         let invalidInstructionRobotData = ["5 3", "1 1 E", "RFARFRFRF"]
-        XCTAssertFalse(parser.getRobots(invalidInstructionRobotData))
+        XCTAssertFalse(parser.getRobots(invalidInstructionRobotData).isSuccessful())
 
         let invalidOrientation = ["5 3", "1 1 F", "RFRFRFRF"]
-        XCTAssertFalse(parser.getRobots(invalidOrientation))
+        XCTAssertFalse(parser.getRobots(invalidOrientation).isSuccessful())
 
     }
     

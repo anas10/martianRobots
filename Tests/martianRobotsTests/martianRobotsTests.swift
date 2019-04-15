@@ -45,7 +45,6 @@ final class martianRobotsTests: XCTestCase {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         let errorOutput = String(data: errorData, encoding: .utf8)
 
-
         let expectedOutput = """
         Enter your instructions:
         1 1 E

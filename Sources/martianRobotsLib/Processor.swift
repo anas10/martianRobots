@@ -14,26 +14,21 @@ public class Processor {
     // This is required to make this class usuable and testable outside the module
     public init() {}
 
+
+    /**
+     Process mars object and executes all robots instructions then prints results
+
+     - parameters:
+        - mars: a valid Mars object
+     */
     public func process(mars: Mars) {
-        for robot in mars.robots {
+
+        mars.robots.forEach { robot in
 
             for instruction in robot.instructions {
-
-                var newPosition: Position?
-                switch instruction {
-                case "R":
-                    newPosition = robot.turnRight()
-                case "L":
-                    newPosition = robot.turnLeft()
-                case "F":
-                    newPosition = robot.moveForward()
-                default: break
-                }
-
-                if let newPosition = newPosition {
+                if let newPosition = robot.executeInstruction(instruction) {
                     if mars.isPositionOutsideWorld(position: newPosition) {
-                        let protected = scents.contains(where: { $0.x == newPosition.x && $0.y == newPosition.y })
-                        if !protected {
+                        if !isProtected(scents: scents, position: newPosition) {
                             scents.append(newPosition)
                             robot.lost = true
                             break
@@ -44,10 +39,23 @@ public class Processor {
                 }
             }
 
-            let finalPosition = robot.position
-
-            print("\(finalPosition.x) \(finalPosition.y) \(finalPosition.orientation.rawValue)\(robot.lost ? " LOST" : "")")
+            print(robot.status)
         }
+
     }
+
+    /**
+     Check if the position already exist in the array provided
+
+     - parameters:
+        - scents: an array of position to check against
+        - position: a position to check
+
+     - returns: A Boolean the position is found.
+     */
+    private func isProtected(scents: [Position], position: Position) -> Bool {
+        return scents.contains(where: { $0.x == position.x && $0.y == position.y })
+    }
+
 }
 

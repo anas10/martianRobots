@@ -20,6 +20,24 @@ class Robot {
 }
 
 extension Robot {
+
+    var status: String {
+        return "\(position.x) \(position.y) \(position.orientation.rawValue)\(lost ? " LOST" : "")"
+    }
+
+    func executeInstruction(_ instruction: String) -> Position? {
+        switch instruction {
+        case "R":
+            return self.turnRight()
+        case "L":
+            return self.turnLeft()
+        case "F":
+            return self.moveForward()
+        default:
+            return nil
+        }
+    }
+
     func moveForward() -> Position {
         switch self.position.orientation {
         case .north:
