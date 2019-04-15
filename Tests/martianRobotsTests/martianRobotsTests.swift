@@ -2,31 +2,51 @@ import XCTest
 import class Foundation.Bundle
 
 final class martianRobotsTests: XCTestCase {
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-
+    func testSampleData() throws {
         // Some of the APIs that we use below are available in macOS 10.13 and above.
         guard #available(macOS 10.13, *) else {
             return
         }
 
-        let fooBinary = productsDirectory.appendingPathComponent("martianRobots")
+        let fooBinary = productsDirectory.appendingPathComponent("martianRobotsApp")
 
         let process = Process()
         process.executableURL = fooBinary
 
-        let pipe = Pipe()
-        process.standardOutput = pipe
+        let inputPipe = Pipe()
+        process.standardInput = inputPipe
+
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
 
         try process.run()
-        process.waitUntilExit()
 
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let sampleData = """
+        5 3
+        1 1 E
+        RFRFRFRF
+        3 2 N
+        FRRFLLFFRRFLL
+        0 3 W
+        LLFFFLFLFL
+
+        """
+
+        let fh = inputPipe.fileHandleForWriting
+        fh.write(sampleData.data(using: .utf8)!)
+        fh.closeFile()
+
+        let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8)
 
-        XCTAssertEqual(output, "Hello, world!\n")
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        let errorOutput = String(data: errorData, encoding: .utf8)
+
+        XCTAssertEqual(output, "Enter your instructions:\n")
+        XCTAssertEqual(errorOutput, "")
     }
 
     /// Returns path to the built products directory.
@@ -42,6 +62,6 @@ final class martianRobotsTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testExample", testExample)
+        ("testSampleData", testSampleData)
     ]
 }
